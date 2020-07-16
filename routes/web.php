@@ -12,13 +12,19 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
+app('debugbar')->disable();
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::prefix('admin')->as('admin.')->group(function(){
+Route::prefix('admin')->as('admin.')->middleware('admin.auth')->group(function(){
+    Route::get('login', 'Auth\AdminLoginController@showLoginForm')->name('login');
+    Route::post('login', 'Auth\AdminLoginController@login')->name('login.submit');
+    Route::fallback('AdminController@page404');
+
     Route::get('/', 'AdminController@dashboard');
+    Route::get('logout', 'Auth\AdminLoginController@logout');
 
     Route::match(['PUT', 'PATCH'], 'posts/{post}/unpublish', 'PostController@unpublish')->name('posts.unpublish');
     Route::resource('posts', 'PostController')->except(['edit', 'update', 'destroy']);
